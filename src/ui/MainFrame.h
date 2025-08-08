@@ -11,7 +11,7 @@
 
 class ConverterFrame : public wxFrame {
 public:
-    ConverterFrame() : wxFrame(nullptr, wxID_ANY, "Cross-Platform Media Converter", wxDefaultPosition, wxSize(760, 760)) {
+    ConverterFrame() : wxFrame(nullptr, wxID_ANY, "zask - Media Converter", wxDefaultPosition, wxSize(760, 760)) {
         wxPanel* panel = new wxPanel(this);
 
         wxBoxSizer* rootSizer = new wxBoxSizer(wxVERTICAL);
@@ -100,7 +100,7 @@ public:
         }
         threadsChoice->SetSelection(0);
         threadsRow->Add(threadsChoice, 0, wxRIGHT, 8);
-        wxStaticText* threadsWarn = new wxStaticText(panel, wxID_ANY, "Warning: high threads may reduce determinism/stability");
+        wxStaticText* threadsWarn = new wxStaticText(panel, wxID_ANY, "Warning: Experimental.");
         threadsWarn->SetForegroundColour(wxColour(200, 60, 60));
         threadsRow->Add(threadsWarn, 0, wxALIGN_CENTER_VERTICAL);
 

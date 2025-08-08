@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(CrossPlatformMediaConverter VERSION 0.1.0 LANGUAGES C CXX)
+project(zask_media_converter VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -28,6 +28,14 @@ target_include_directories(media-converter PRIVATE
 )
 
 target_link_libraries(media-converter PRIVATE ${wxWidgets_LIBRARIES})
+
+# Name binary with OS and arch suffix
+set(BUILD_OS "${CMAKE_SYSTEM_NAME}")
+string(TOLOWER "${BUILD_OS}" BUILD_OS_LC)
+set(BUILD_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
+string(TOLOWER "${BUILD_ARCH}" BUILD_ARCH_LC)
+set(BINARY_BASENAME "media-converter-${BUILD_OS_LC}-${BUILD_ARCH_LC}")
+set_target_properties(media-converter PROPERTIES OUTPUT_NAME "${BINARY_BASENAME}")
 
 # Platform-specific tweaks
 if(WIN32)

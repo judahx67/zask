@@ -2,7 +2,9 @@
 
 BUILD_DIR ?= build/linux
 WINDOWS_BUILD_DIR ?= build/windows-x86_64
-BIN := $(BUILD_DIR)/media-converter
+OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
+ARCH := $(shell uname -m | tr '[:upper:]' '[:lower:]')
+BIN := $(BUILD_DIR)/media-converter-$(OS)-$(ARCH)
 
 .PHONY: all configure build run clean windows win-config win-build install
 

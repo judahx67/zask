@@ -10,8 +10,21 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # wxWidgets
-find_package(wxWidgets COMPONENTS base core REQUIRED)
-include(${wxWidgets_USE_FILE})
+if(CMAKE_CROSSCOMPILING)
+    # For cross-compilation, set wxWidgets paths explicitly
+    set(wxWidgets_CONFIG_EXECUTABLE /usr/x86_64-w64-mingw32/bin/wx-config)
+    set(wxWidgets_INCLUDE_DIRS 
+        /usr/x86_64-w64-mingw32/include/wx-3.3
+        /usr/x86_64-w64-mingw32/lib/wx/include/msw-unicode-static-3.3
+    )
+    set(wxWidgets_LIBRARIES 
+        /usr/x86_64-w64-mingw32/lib/libwx_mswu-3.3-Windows.dll.a
+    )
+    set(wxWidgets_USE_FILE /usr/x86_64-w64-mingw32/lib/cmake/wxWidgets/wxWidgetsConfig.cmake)
+else()
+    find_package(wxWidgets COMPONENTS base core REQUIRED)
+    include(${wxWidgets_USE_FILE})
+endif()
 
 file(GLOB_RECURSE SRC_FILES
     CONFIGURE_DEPENDS
@@ -25,9 +38,38 @@ add_executable(media-converter
 
 target_include_directories(media-converter PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${wxWidgets_INCLUDE_DIRS}
 )
 
 target_link_libraries(media-converter PRIVATE ${wxWidgets_LIBRARIES})
+
+if(CMAKE_CROSSCOMPILING)
+    # Add Windows system libraries for MinGW-w64 cross-compilation
+    target_link_libraries(media-converter PRIVATE 
+        -lgdi32
+        -lcomctl32
+        -luxtheme
+        -lole32
+        -loleaut32
+        -luuid
+        -lwinspool
+        -lcomdlg32
+        -ladvapi32
+        -lshell32
+        -luser32
+        -lkernel32
+        -lgdiplus
+        -lversion
+        -lshlwapi
+        -lmsimg32
+        -loleacc
+        -lpng
+        -lz
+        -ljpeg
+        -ltiff
+        -lexpat
+    )
+endif()
 
 # Name binary with OS and arch suffix
 set(BUILD_OS "${CMAKE_SYSTEM_NAME}")

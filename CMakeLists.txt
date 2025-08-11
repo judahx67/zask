@@ -1,92 +1,42 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21)
 
-project(zask_media_converter VERSION 0.1.0 LANGUAGES C CXX)
+project(zask LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Enable folders in IDEs
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+# If using vcpkg, pass -DCMAKE_TOOLCHAIN_FILE=<vcpkg>/scripts/buildsystems/vcpkg.cmake
 
-# wxWidgets
-if(CMAKE_CROSSCOMPILING)
-    # For cross-compilation, set wxWidgets paths explicitly
-    set(wxWidgets_CONFIG_EXECUTABLE /usr/x86_64-w64-mingw32/bin/wx-config)
-    set(wxWidgets_INCLUDE_DIRS 
-        /usr/x86_64-w64-mingw32/include/wx-3.3
-        /usr/x86_64-w64-mingw32/lib/wx/include/msw-unicode-static-3.3
-    )
-    set(wxWidgets_LIBRARIES 
-        /usr/x86_64-w64-mingw32/lib/libwx_mswu-3.3-Windows.dll.a
-    )
-    set(wxWidgets_USE_FILE /usr/x86_64-w64-mingw32/lib/cmake/wxWidgets/wxWidgetsConfig.cmake)
+# Try wxWidgets config package first (vcpkg on Windows), then fall back to module mode (Linux distros)
+set(WX_COMPONENTS base core adv)
+find_package(wxWidgets CONFIG QUIET COMPONENTS ${WX_COMPONENTS})
+if(TARGET wx::core)
+  set(ZASK_USE_WX_TARGETS TRUE)
 else()
-    find_package(wxWidgets COMPONENTS base core REQUIRED)
-    include(${wxWidgets_USE_FILE})
+  unset(wxWidgets_FOUND)
+  find_package(wxWidgets REQUIRED COMPONENTS core base adv)
+  set(ZASK_USE_WX_TARGETS FALSE)
 endif()
 
-file(GLOB_RECURSE SRC_FILES
-    CONFIGURE_DEPENDS
-    src/*.cpp
-    src/*.h
+add_executable(zask WIN32
+    src/main.cpp
+    src/core/MediaConverter.cpp
+    src/core/MediaConverter.h
+    src/ui/MainFrame.h
 )
 
-add_executable(media-converter
-    ${SRC_FILES}
-)
-
-target_include_directories(media-converter PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${wxWidgets_INCLUDE_DIRS}
-)
-
-target_link_libraries(media-converter PRIVATE ${wxWidgets_LIBRARIES})
-
-if(CMAKE_CROSSCOMPILING)
-    # Add Windows system libraries for MinGW-w64 cross-compilation
-    target_link_libraries(media-converter PRIVATE 
-        -lgdi32
-        -lcomctl32
-        -luxtheme
-        -lole32
-        -loleaut32
-        -luuid
-        -lwinspool
-        -lcomdlg32
-        -ladvapi32
-        -lshell32
-        -luser32
-        -lkernel32
-        -lgdiplus
-        -lversion
-        -lshlwapi
-        -lmsimg32
-        -loleacc
-        -lpng
-        -lz
-        -ljpeg
-        -ltiff
-        -lexpat
-    )
+if(ZASK_USE_WX_TARGETS)
+  target_link_libraries(zask PRIVATE wx::base wx::core wx::adv)
+else()
+  include(${wxWidgets_USE_FILE})
+  target_link_libraries(zask PRIVATE ${wxWidgets_LIBRARIES})
 endif()
 
-# Name binary with OS and arch suffix
-set(BUILD_OS "${CMAKE_SYSTEM_NAME}")
-string(TOLOWER "${BUILD_OS}" BUILD_OS_LC)
-set(BUILD_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
-string(TOLOWER "${BUILD_ARCH}" BUILD_ARCH_LC)
-set(BINARY_BASENAME "media-converter-${BUILD_OS_LC}-${BUILD_ARCH_LC}")
-set_target_properties(media-converter PROPERTIES OUTPUT_NAME "${BINARY_BASENAME}")
-
-# Platform-specific tweaks
+# Recommended Unicode defines for Windows builds
 if(WIN32)
-    # Set the subsystem to Windows to hide console on Windows builds
-    target_link_options(media-converter PRIVATE -mwindows)
+  target_compile_definitions(zask PRIVATE UNICODE _UNICODE)
+  # vcpkg's VCPKG_APPLOCAL_DEPS=ON handles DLL copying automatically
+  # No need for manual post-build commands
 endif()
-
-install(TARGETS media-converter RUNTIME DESTINATION bin)
-
-message(STATUS "Configured ${PROJECT_NAME} ${PROJECT_VERSION}")
 
 

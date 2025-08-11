@@ -13,13 +13,25 @@
         "VCPKG_TARGET_TRIPLET": "x64-windows",
         "VCPKG_APPLOCAL_DEPS": "ON"
       }
+    },
+    {
+      "name": "linux-gcc",
+      "displayName": "Linux GCC (system wxWidgets)",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-linux",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
     }
   ],
   "buildPresets": [
     { "name": "windows-vs2022-debug",   "configurePreset": "windows-vs2022", "configuration": "Debug" },
     { "name": "windows-vs2022-release", "configurePreset": "windows-vs2022", "configuration": "Release" }
+    ,
+    { "name": "linux-gcc-debug",   "configurePreset": "linux-gcc", "configuration": "Debug" },
+    { "name": "linux-gcc-release", "configurePreset": "linux-gcc", "configuration": "RelWithDebInfo" }
   ],
-  "testPresets": [] // TODO: add tests
+  "testPresets": []
 }
 
 

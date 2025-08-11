@@ -1,36 +1,35 @@
-# Convenience Makefile that wraps CMake
+# Convenience Makefile for Linux/macOS and Windows (via existing presets)
 
-BUILD_DIR ?= build/linux
-WINDOWS_BUILD_DIR ?= build/windows-x86_64
-OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
-ARCH := $(shell uname -m | tr '[:upper:]' '[:lower:]')
-BIN := $(BUILD_DIR)/media-converter-$(OS)-$(ARCH)
-
-.PHONY: all configure build run clean windows win-config win-build install
+.PHONY: all configure build run clean windows linux
 
 all: build
 
 configure:
-	cmake -S . -B $(BUILD_DIR) -DCMAKE_BUILD_TYPE=Release
+	cmake -S . -B build
 
 build: configure
-	cmake --build $(BUILD_DIR) --parallel
+	cmake --build build --config Release -- -j
 
-run: build
-	$(BIN)
+run:
+	@if [ -f build/zask ]; then \
+		./build/zask; \
+	elif [ -f build/Release/zask.exe ]; then \
+		build/Release/zask.exe; \
+	else \
+		echo "No binary found. Build first."; \
+	fi
 
 clean:
-	rm -rf build
+	cmake -E rm -rf build
 
-windows: win-config win-build
+# Linux target using system wxWidgets packages
+linux:
+	cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+	cmake --build build --config Release -- -j
 
-win-config:
-	cmake -S . -B $(WINDOWS_BUILD_DIR) -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=toolchains/mingw-w64-x86_64.cmake
-
-win-build:
-	cmake --build $(WINDOWS_BUILD_DIR) --parallel
-
-install: build
-	cmake --install $(BUILD_DIR)
+# Windows target expects vcpkg + preset
+windows:
+	cmake --preset windows-vs2022
+	cmake --build --preset windows-vs2022-release
 
 

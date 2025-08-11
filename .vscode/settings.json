@@ -1,0 +1,10 @@
+{
+  "cmake.useCMakePresets": "always",
+  "cmake.configureOnOpen": true,
+  "cmake.configurePreset": "windows-vs2022",
+  "cmake.buildPreset": "windows-vs2022-debug",
+  "cmake.buildDirectory": "${workspaceFolder}/build",
+  "cmake.defaultVariants": {}
+}
+
+
